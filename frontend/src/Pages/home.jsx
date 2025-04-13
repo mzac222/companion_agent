@@ -5,7 +5,7 @@ import {
     X,
     Lightbulb,
   } from 'lucide-react';
-const API_URL = 'http://127.0.0.1:5000';
+
 
 const quickResponses = [
   "I'm feeling anxious today",
@@ -92,7 +92,7 @@ function Home() {
     
     try {
       // Make API call to Flask backend
-      const response = await fetch(`${API_URL}/predict`, {
+      const response = await fetch(`/api/predict`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

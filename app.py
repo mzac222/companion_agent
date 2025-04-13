@@ -1,20 +1,31 @@
-from flask import Flask, render_template,request, jsonify
-
+# server.py
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from chat import get_response
-app=Flask(__name__)
 
-@app.get("/")
-def index_get():
-    return render_template("base.html")
+app = Flask(__name__)
 
-@app.post("/predict")
+CORS(app)
+
+
+@app.route("/")
+def index():
+    return "Mental Health Chatbot API"
+
+@app.route("/predict", methods=["POST"])
 def predict():
-    text=request.get_json().get("message")
-    response=get_response(text) 
-    message={"answer":response}
-    return jsonify(message)
+    try:
+        data = request.get_json()
+        text = data.get("message", "")
+        
+        if not text:
+            return jsonify({"error": "No message provided"}), 400
+            
+        response = get_response(text)
+        message = {"answer": response}
+        return jsonify(message)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
-
- 
+    app.run(debug=True, host="0.0.0.0", port=5000)

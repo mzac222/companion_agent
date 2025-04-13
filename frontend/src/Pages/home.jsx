@@ -5,7 +5,7 @@ import {
     X,
     Lightbulb,
   } from 'lucide-react';
-
+import axios from 'axios';
 
 const quickResponses = [
   "I'm feeling anxious today",
@@ -75,52 +75,40 @@ function Home() {
 
   const sendMessage = async (text = inputText) => {
     if (text.trim() === '') return;
-    
+  
     const messageText = text;
     setInputText('');
     setShowEmojis(false);
-    
-    // Add user message
+  
     const userMessage = {
       name: 'User',
       message: messageText,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
-    
+  
     setMessages(prevMessages => [...prevMessages, userMessage]);
     setIsLoading(true);
-    
+  
     try {
-      // Make API call to Flask backend
-      const response = await fetch(`/api/predict`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message: messageText }),
+      const response = await axios.post('/api/predict', {
+        message: messageText
       });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
+  
       setTimeout(() => {
         const botMessage = {
           name: 'Star',
-          message: data.answer,
+          message: response.data.answer,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         setMessages(prevMessages => [...prevMessages, botMessage]);
         setIsLoading(false);
       }, 500);
-      
+  
     } catch (error) {
       console.error('Error:', error);
       setTimeout(() => {
-        const errorMessage = { 
-          name: 'Star', 
+        const errorMessage = {
+          name: 'Star',
           message: 'Sorry, I encountered an error. Please try again later.',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
@@ -129,7 +117,6 @@ function Home() {
       }, 500);
     }
   };
-
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       sendMessage();

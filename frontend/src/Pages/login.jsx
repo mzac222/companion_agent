@@ -11,7 +11,7 @@ function Login() {
 
     if (username && password) {
       localStorage.setItem('username', username);
-      navigate('/home');
+      navigate('/chat');
     } else {
       alert('Please enter both username and password');
     }

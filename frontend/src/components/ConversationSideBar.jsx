@@ -1,66 +1,77 @@
 import React, { useState, useEffect } from 'react';
-import { getChatHistory, getChatById } from '../services/api'; // Import getChatById
-import { MessageSquare, PlusCircle, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { MessageSquare, PlusCircle, ArrowLeft, Search, X, Clock } from 'lucide-react';
 
-const ConversationSidebar = ({ isOpen, onClose, onNewSession, onSelectConversation }) => {
+const ConversationSidebar = ({ isOpen, onClose, onNewSession, onSelectConversation, currentSessionId }) => {
   const [conversations, setConversations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedConversation, setSelectedConversation] = useState(null);
-  const navigate = useNavigate();
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeId, setActiveId] = useState(currentSessionId);
 
+  // Fetch conversations list
   useEffect(() => {
-    const fetchConversations = async () => {
-      try {
-        setIsLoading(true);
-        const response = await getChatHistory();
-        
-        if (response.history) {
-          // Group conversations by session and get the latest message
-          const sessions = {};
-          response.history.forEach(item => {
-            if (!sessions[item.session_id] || new Date(item.timestamp) > new Date(sessions[item.session_id].timestamp)) {
-              sessions[item.session_id] = {
-                id: item.session_id,
-                title: item.user_query || "New Conversation",
-                timestamp: item.timestamp,
-                preview: item.bot_response || ""
-              };
-            }
-          });
-          
-          setConversations(Object.values(sessions));
-        }
-      } catch (error) {
-        console.error('Error fetching conversations:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchConversations();
   }, []);
 
-  // New function to handle conversation selection
-  const handleSelectConversation = async (sessionId) => {
+  // Update active ID whenever currentSessionId changes
+  useEffect(() => {
+    if (currentSessionId) {
+      setActiveId(currentSessionId);
+    }
+  }, [currentSessionId]);
+
+  const fetchConversations = async () => {
     try {
       setIsLoading(true);
-      // Fetch the full conversation by ID
-      const conversation = await getChatById(sessionId);
+      const response = await fetch('/api/sessions');
       
-      if (conversation) {
-        setSelectedConversation(conversation);
-        // Pass both the ID and the conversation data to the parent component
-        onSelectConversation(sessionId, conversation);
+      if (!response.ok) throw new Error('Failed to fetch sessions');
+      
+      const data = await response.json();
+      
+      if (data.sessions) {
+        const processedSessions = data.sessions.map(session => {
+          const firstUserMessage = session.messages?.find(m => m.role === 'user');
+          const lastAssistantMessage = [...session.messages]
+            .reverse()
+            .find(m => m.role === 'assistant');
+            
+          return {
+            id: session.id,
+            title: firstUserMessage?.content || "New Conversation",
+            preview: lastAssistantMessage?.content || "No messages yet",
+            timestamp: session.updated_at
+          };
+        }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        setConversations(processedSessions);
       }
     } catch (error) {
-      console.error('Error fetching conversation:', error);
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const filteredConversations = searchQuery 
+    ? conversations.filter(convo => 
+        convo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        convo.preview.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : conversations;
+
+  const handleSelectConversation = (conversation) => {
+    setActiveId(conversation.id);
+    onSelectConversation(conversation.id);
+    
+    // Close sidebar on mobile
+    if (window.innerWidth < 768) {
+      onClose();
+    }
+  };
+
   const formatDate = (timestamp) => {
+    if (!timestamp) return '';
     return new Date(timestamp).toLocaleDateString([], { 
       month: 'short', 
       day: 'numeric',
@@ -71,77 +82,181 @@ const ConversationSidebar = ({ isOpen, onClose, onNewSession, onSelectConversati
 
   const getPreviewText = (text) => {
     if (!text) return "No messages yet";
-    return text.length > 40 ? text.substring(0, 40) + '...' : text;
+    return text.length > 40 ? `${text.substring(0, 40)}...` : text;
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+  };
+
+  const handleNewSession = () => {
+    setActiveId(null);
+    onNewSession();
+    
+    // Close sidebar on mobile
+    if (window.innerWidth < 768) {
+      onClose();
+    }
   };
 
   return (
-    <div className={`min-h-screen fixed inset-y-0 left-0 w-64 bg-white shadow-lg transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-300 ease-in-out `}>
-      <div className="flex flex-col border-r border-gray-200">
-        {/* Header */}
-        <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-          <h2 className="text-lg font-semibold">Your Conversations</h2>
+    <div 
+      className={`min-h-screen fixed inset-y-0 left-0 w-72 bg-gradient-to-b from-indigo-50 to-white shadow-xl transform 
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 
+        transition-transform duration-300 ease-in-out z-20 flex flex-col`}
+    >
+      {/* Header */}
+      <div className="py-5 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold">Conversations</h2>
+          <div className="flex space-x-2">
+            <button 
+              onClick={handleNewSession}
+              className="p-1.5 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-all"
+              title="New Conversation"
+            >
+              <PlusCircle className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={onClose}
+              className="p-1.5 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-all md:hidden"
+              title="Close Sidebar"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="mt-4 relative">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-indigo-200" />
+            <input
+              type="text"
+              placeholder="Search conversations..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-8 py-2 bg-white bg-opacity-20 backdrop-blur-sm rounded-lg 
+                placeholder-indigo-200 text-white border border-white border-opacity-20 
+                focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-40"
+            />
+            {searchQuery && (
+              <button 
+                onClick={clearSearch} 
+                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+              >
+                <X className="w-4 h-4 text-indigo-200 hover:text-white" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Error message if any */}
+      {error && (
+        <div className="mx-4 mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-600">{error}</p>
           <button 
-            onClick={onClose}
-            className="md:hidden text-white hover:text-indigo-200"
+            onClick={fetchConversations}
+            className="mt-1 text-sm text-red-600 underline hover:text-red-700"
           >
-            <ArrowLeft className="w-5 h-5" />
+            Try again
           </button>
         </div>
-        
-        {/* New Conversation Button */}
-        <div className="p-3 border-b border-gray-200">
-          <button
-            onClick={onNewSession}
-            className="w-full flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-          >
-            <PlusCircle className="w-5 h-5 mr-2" />
-            New Conversation
-          </button>
-        </div>
-        
-        {/* Conversation List */}
-        <div className="flex-1 overflow-y-auto">
-          {isLoading ? (
-            <div className="flex justify-center p-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
-            </div>
-          ) : conversations.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">
-              <p>No conversations yet</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-100">
-              {conversations.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  onClick={() => handleSelectConversation(conversation.id)}
-                  className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
-                    selectedConversation?.id === conversation.id ? 'bg-indigo-50' : ''
-                  }`}
+      )}
+
+      {/* Conversation List */}
+      <div className="flex-1 overflow-x-hidden z">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center h-32 p-4">
+            <div className="w-8 h-8 border-t-2 border-indigo-600 border-r-2 border-b-2 border-transparent rounded-full animate-spin"></div>
+            <p className="mt-2 text-sm text-indigo-600">Loading conversations...</p>
+          </div>
+        ) : filteredConversations.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-8 text-center">
+            {searchQuery ? (
+              <>
+                <div className="bg-indigo-100 p-3 rounded-full mb-3">
+                  <Search className="w-6 h-6 text-indigo-500" />
+                </div>
+                <p className="text-gray-600 mb-2">No matching conversations</p>
+                <button 
+                  onClick={clearSearch}
+                  className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
                 >
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-start">
-                      <div className="bg-indigo-100 p-2 rounded-full mr-3">
-                        <MessageSquare className="w-4 h-4 text-indigo-600" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium text-gray-800">
-                          {conversation.title}
-                        </h3>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {getPreviewText(conversation.preview)}
-                        </p>
-                      </div>
+                  Clear search
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="bg-indigo-100 p-3 rounded-full mb-3">
+                  <MessageSquare className="w-6 h-6 text-indigo-500" />
+                </div>
+                <p className="text-gray-600 mb-2">No conversations yet</p>
+                <button 
+                  onClick={handleNewSession}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                >
+                  Start a new one
+                </button>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="p-3 space-y-2">
+            {filteredConversations.map((conversation) => (
+              <div
+                key={conversation.id}
+                onClick={() => handleSelectConversation(conversation)}
+                className={`p-3 rounded-xl cursor-pointer transition-all duration-200
+                  ${activeId === conversation.id 
+                    ? 'bg-indigo-100 border-indigo-200 shadow-sm' 
+                    : 'hover:bg-gray-50 border-transparent'
+                  } border`}
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex items-start space-x-3">
+                    <div className={`p-2 rounded-full flex-shrink-0
+                      ${activeId === conversation.id 
+                        ? 'bg-indigo-500 text-white' 
+                        : 'bg-indigo-100 text-indigo-600'}`}
+                    >
+                      <MessageSquare className="w-4 h-4" />
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className={`font-medium truncate
+                        ${activeId === conversation.id ? 'text-indigo-900' : 'text-gray-800'}`}
+                      >
+                        {conversation.title || "New Conversation"}
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-1">
+                        {getPreviewText(conversation.preview)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end">
                     <span className="text-xs text-gray-400 whitespace-nowrap">
                       {formatDate(conversation.timestamp)}
                     </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="p-4 border-t border-gray-200 bg-white bg-opacity-70 backdrop-blur-sm">
+        <button
+          onClick={handleNewSession}
+          className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 
+            hover:from-indigo-700 hover:to-purple-700 text-white py-2.5 px-4 rounded-lg 
+            transition-all duration-200 shadow-md hover:shadow-lg"
+        >
+          <PlusCircle className="w-4 h-4" />
+          <span className="font-medium">New Chat</span>
+        </button>
       </div>
     </div>
   );

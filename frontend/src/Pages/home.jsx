@@ -77,7 +77,6 @@ function Home() {
         setCurrentSession(null);
       }
       // Show welcome message for new conversation
-      showWelcomeMessage(savedUsername);
     }
   
     setTimeout(() => {
@@ -87,15 +86,15 @@ function Home() {
   
   // Update the loadChatById function
  
-  const showWelcomeMessage = (username) => {
-    const initialMessage = {
-      name: 'Star',
-      message: `Hello ${username || 'there'}! I'm Star, your mental health companion. How are you feeling today?`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    setMessages([initialMessage]);
-    setCurrentSession(null);
-  };
+  // const showWelcomeMessage = (username) => {
+  //   const initialMessage = {
+  //     name: 'Star',
+  //     message: `Hello ${username || 'there'}! I'm Star, your mental health companion. How are you feeling today?`,
+  //     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  //   };
+  //   setMessages([initialMessage]);
+  //   setCurrentSession(null);
+  // };
  
   const loadChatById = async (chatId) => {
     try {
@@ -154,21 +153,32 @@ function Home() {
     setIsLoading(true);
     
     try {
-      const response = await sendMessage(messageText, currentSession);
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: messageText,
+          session_id: currentSession  // Send current session ID if exists
+        })
+      });
+      
+      const data = await response.json();
       
       const botMessage = {
         name: 'Star',
-        message: response.response,
+        message: data.response,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       
       setMessages(prev => [...prev, botMessage]);
       
       // Update current session ID if this is a new conversation
-      if (!currentSession && response.session_id) {
-        setCurrentSession(response.session_id);
+      if (!currentSession && data.session_id) {
+        setCurrentSession(data.session_id);
         // Update URL without refreshing page
-        window.history.replaceState(null, '', `/chat/${response.session_id}`);
+        window.history.replaceState(null, '', `/chat/${data.session_id}`);
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -240,284 +250,214 @@ const handleNewSession = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-indigo-100 to-purple-100 flex flex-col min-h-screen">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white bg-opacity-90 backdrop-blur-sm border-b border-indigo-100 shadow-sm px-4 py-4">
-        <div className=" mx-auto flex items-center justify-between">
-          <div className="flex items-center">
-            <button 
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <ConversationSidebar 
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onNewSession={handleNewSession}
+        onSelectConversation={handleSelectConversation}
+        currentSessionId={currentSession}
+      />
+      
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
+        {/* Chat Header */}
+        <header className="bg-white shadow py-3 px-6 flex items-center justify-between z-10">
+          <div className="flex items-center space-x-3">
+            <button
               onClick={() => setSidebarOpen(true)}
-              className="md:hidden mr-3 text-indigo-600 hover:text-indigo-800 transition-colors"
+              className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 md:hidden"
+              aria-label="Open sidebar"
             >
-              <Menu className="w-6 h-6" />
+              <Menu size={20} />
             </button>
-            <div className="flex items-center">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-xl">S</span>
-              </div>
-              <h1 className="ml-3 text-xl md:text-2xl font-bold text-indigo-800">Your Mental Health Companion ❤️</h1>
+            <div>
+              <h1 className="text-lg font-medium text-gray-800">
+                {currentSession ? "Conversation" : "New Chat"}
+              </h1>
+              <p className="text-xs text-gray-500">
+                {currentSession ? "Continuing your conversation" : "Start a new chat"}
+              </p>
             </div>
           </div>
           
-          <div className="flex items-center space-x-3">
-            <button 
-              onClick={() => navigate('/history')}
-              className="bg-white hover:bg-indigo-50 text-indigo-600 rounded-full p-2 shadow-sm flex items-center transition-all"
-              title="View History"
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={() => setShowTips(!showTips)}
+              className="p-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors"
+              title="Wellness Tips"
             >
-              <History className="w-5 h-5" />
+              <Lightbulb size={18} />
             </button>
-            
-            <button 
+            <button
               onClick={toggleSessionMenu}
-              className="bg-white hover:bg-indigo-50 text-indigo-600 rounded-full p-2 shadow-sm flex items-center transition-all"
-              title="Session Menu"
+              className="p-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors relative"
+              title="Session Options"
             >
-              <Settings className="w-5 h-5" />
-            </button>
-            
-            {showSessionMenu && (
-              <div className="absolute right-4 top-16 mt-2 w-56 rounded-lg shadow-xl bg-white ring-1 ring-black ring-opacity-5 z-10 border border-indigo-50" ref={sessionMenuRef}>
-                <div className="py-1 divide-y divide-gray-100">
-                  <div className="px-4 py-3">
-                    <p className="text-sm font-medium text-gray-900">Session Options</p>
-                  </div>
-                  <div className="py-1">
-                    <button
-                      onClick={() => {
-                        startNewSession();
-                        setShowSessionMenu(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 flex items-center"
-                    >
-                      <PlusCircle className="w-4 h-4 mr-2 text-indigo-500" />
-                      Start New Conversation
-                    </button>
-                    <button
-                      onClick={() => {
-                        navigate('/history');
-                        setShowSessionMenu(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 flex items-center"
-                    >
-                      <History className="w-4 h-4 mr-2 text-indigo-500" />
-                      View Conversation History
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
-
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <ConversationSidebar 
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-          onNewSession={handleNewSession}
-          onSelectConversation={handleSelectConversation}
-        />
-        
-        {/* Main Chat Area */}
-        <div className="flex-1 px-4 py-6 md:py-8 flex justify-center items-start overflow-hidden">
-          <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden border border-indigo-100 flex flex-col">
-            {/* Chat Header */}
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-12 h-12 rounded-full overflow-hidden mr-3 border-2 border-white shadow-md p-0.5 bg-white">
-                  <img 
-                    src="https://img.icons8.com/color/48/000000/circled-user-female-skin-type-5--v1.png" 
-                    alt="Star avatar" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="text-white">
-                  <h4 className="font-medium text-lg">Star</h4>
-                  <div className="flex items-center">
-                    <div className="h-2 w-2 rounded-full bg-green-400 mr-2"></div>
-                    <p className="text-indigo-100 text-sm">
-                      {currentSession ? `Session #${currentSession}` : 'New Conversation'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button 
-                  onClick={startNewSession}
-                  className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-full px-3 py-1.5 text-sm flex items-center transition-all"
-                >
-                  <PlusCircle className="w-4 h-4 mr-1.5" />
-                  New Chat
-                </button>
-                <button 
-                  onClick={() => setShowTips(!showTips)} 
-                  className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-full p-2 transition-all duration-200"
-                  title="Wellness tips"
-                >
-                  <Info className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Wellness Tip Banner */}
-            {showTips && (
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-indigo-100 flex items-start animate-fadeIn">
-                <div className="text-indigo-600 mr-3 mt-0.5">
-                  <Lightbulb className="h-6 w-6" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-indigo-800 font-medium mb-1">Today's Wellness Tip</p>
-                  <p className="text-sm text-indigo-600">{todaysTip}</p>
-                </div>
-                <button 
-                  onClick={() => setShowTips(false)}
-                  className="text-indigo-400 hover:text-indigo-600 ml-2"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-            )}
-
-            {/* Quick Responses */}
-            <div className="bg-gradient-to-r from-gray-50 to-white p-3 border-b border-gray-100 overflow-x-auto scrollbar-hide shadow-sm">
-              <div className="flex space-x-2">
-                {quickResponses.map((response, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleQuickResponse(response)}
-                    disabled={isLoading}
-                    className="px-4 py-2 bg-white text-indigo-600 text-sm rounded-full border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 transition whitespace-nowrap flex-shrink-0 shadow-sm"
-                  >
-                    {response}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            {/* Chat Messages */}
-            <div 
-              ref={messagesContainerRef}
-              className="flex-grow overflow-y-auto p-4 md:p-6 bg-gradient-to-b from-gray-50 to-white"
-              style={{ height: '400px', maxHeight: '60vh' }}
-            >
-              {messages.map((msg, index) => (
+              <Settings size={18} />
+              {showSessionMenu && (
                 <div 
-                  key={index} 
-                  className={`flex ${msg.name === 'User' ? 'justify-end' : 'justify-start'} mb-4`}
+                  ref={sessionMenuRef}
+                  className="absolute right-0 top-full mt-1 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-50"
                 >
-                  {msg.name !== 'User' && (
-                    <div className="w-10 h-10 rounded-full overflow-hidden mr-2 flex-shrink-0 border border-indigo-100 shadow-sm">
-                      <img 
-                        src="https://img.icons8.com/color/48/000000/circled-user-female-skin-type-5--v1.png" 
-                        alt="Star avatar" 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <div className={`flex flex-col ${msg.name === 'User' ? 'items-end' : 'items-start'} max-w-xs md:max-w-md`}>
-                    <div 
-                      className={`px-4 py-3 rounded-2xl break-words ${
-                        msg.name === 'User' 
-                          ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-tr-none shadow-md' 
-                          : 'bg-white border border-gray-200 text-gray-700 rounded-tl-none shadow-sm'
-                      }`}
+                  <button
+                    onClick={handleNewSession}
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                  >
+                    New Session
+                  </button>
+                  {currentSession && (
+                    <button
+                      onClick={() => navigator.clipboard.writeText(currentSession)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                     >
-                      {msg.message}
-                    </div>
-                    <span className="text-xs text-gray-500 mt-1 mx-1">{msg.timestamp}</span>
-                  </div>
-                  {msg.name === 'User' && (
-                    <div className="w-10 h-10 rounded-full overflow-hidden ml-2 flex-shrink-0 bg-indigo-100 flex items-center justify-center shadow-sm">
-                      <User className="h-5 w-5 text-indigo-600" />
-                    </div>
-                  )}
-                </div>
-              ))}
-              
-              {isLoading && (
-                <div className="flex justify-start mb-4">
-                  <div className="w-10 h-10 rounded-full overflow-hidden mr-2 flex-shrink-0 border border-indigo-100 shadow-sm">
-                    <img 
-                      src="https://img.icons8.com/color/48/000000/circled-user-female-skin-type-5--v1.png" 
-                      alt="Star avatar" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="bg-white rounded-2xl rounded-tl-none border border-gray-200 px-5 py-4 shadow-sm">
-                    <div className="flex space-x-2">
-                      <div className="w-2 h-2 rounded-full bg-indigo-300 animate-bounce"></div>
-                      <div className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                      <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-            
-            {/* Chat Input */}
-            <div className="border-t border-gray-200 p-4 bg-white shadow-inner">
-              <div className="flex items-center">
-                <button 
-                  onClick={() => setShowEmojis(!showEmojis)}
-                  className="text-gray-400 hover:text-indigo-500 mr-3 transition-colors"
-                  title="Add emoji"
-                >
-                  <Smile className="h-6 w-6" />
-                </button>
-                <div className="flex-1 bg-gray-100 rounded-full flex items-center px-4 py-1 focus-within:ring-2 focus-within:ring-indigo-300 focus-within:bg-white transition-all">
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={inputText}
-                    onChange={handleInputChange}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Type your message here..."
-                    className="flex-1 py-2 bg-transparent outline-none text-gray-700 placeholder-gray-400"
-                    disabled={isLoading}
-                  />
-                  {inputText.trim() !== '' && (
-                    <button 
-                      onClick={() => setInputText('')}
-                      className="text-gray-400 hover:text-gray-600 ml-1"
-                    >
-                      <X className="h-5 w-5" />
+                      Copy Session ID
                     </button>
                   )}
                 </div>
-                <button 
-                  onClick={() => sendMessageToBackend()}
-                  disabled={isLoading || inputText.trim() === ''}
-                  className={`ml-3 rounded-full w-12 h-12 flex items-center justify-center transition-all ${
-                    isLoading || inputText.trim() === '' 
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
-                      :  'bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:shadow-lg transform hover:scale-105'
-                  }`}
-                >
-                  <Send className="w-5 h-5" />
-                </button>
+              )}
+            </button>
+          </div>
+        </header>
+        
+        {/* Wellness Tips Panel */}
+        {showTips && (
+          <div className="bg-indigo-50 p-3 border-b border-indigo-100">
+            <div className="flex justify-between items-center">
+              <h3 className="font-medium text-indigo-800 text-sm">Today's Wellness Tip</h3>
+              <button
+                onClick={() => setShowTips(false)}
+                className="text-indigo-500 hover:text-indigo-700"
+                aria-label="Close tips"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <p className="mt-1 text-indigo-700 text-sm">{todaysTip}</p>
+          </div>
+        )}
+        
+        {/* Messages Area */}
+        <div 
+          ref={messagesContainerRef}
+          className="flex-1 overflow-y-auto px-4 py-6 space-y-5"
+        >
+          
+            <div className="flex flex-col items-center justify-center h-full text-center px-4">
+              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-8 h-8 text-indigo-600">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
               </div>
-
-              {/* Emoji Picker */}
-              {showEmojis && (
-                <div className="mt-3 bg-white border border-gray-200 rounded-xl p-3 shadow-lg">
-                  <div className="grid grid-cols-8 gap-2">
-                    {['😀', '😊', '😂', '😍', '🥰', '😎', '😢', '😡', '🤗', '😴', '👍', '❤️', '🙏', '🤔', '😇', '🥺'].map((emoji, i) => (
-                      <button
-                        key={i}
-                        onClick={() => addEmoji(emoji)}
-                        className="text-2xl hover:bg-gray-100 rounded-lg p-2 transition-colors"
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
+              <h3 className="text-lg font-medium text-gray-800 mb-2">Welcome to Wellness Chat</h3>
+              <p className="text-gray-500 max-w-md">Start a conversation to get personalized wellness advice, meditation guidance, and more.</p>
+            </div>
+          
+          
+          {messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`flex ${msg.name === 'User' ? 'justify-end' : 'justify-start'}`}
+            >
+              {msg.name !== 'User' && (
+                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
+                  <span className="text-indigo-600 text-sm font-medium">A</span>
+                </div>
+              )}
+              
+              <div
+                className={`max-w-sm md:max-w-md lg:max-w-lg rounded-2xl p-3.5 ${
+                  msg.name === 'User'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white border border-gray-100 shadow-sm'
+                }`}
+              >
+                <p className={`text-sm ${msg.name === 'User' ? 'text-white' : 'text-gray-800'}`}>
+                  {msg.message}
+                </p>
+                <span className={`text-xs mt-1.5 block ${
+                  msg.name === 'User' ? 'text-indigo-200' : 'text-gray-400'
+                }`}>
+                  {msg.timestamp}
+                </span>
+              </div>
+              
+              {msg.name === 'User' && (
+                <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center ml-3 flex-shrink-0 mt-1">
+                  <span className="text-white text-sm font-medium">U</span>
                 </div>
               )}
             </div>
+          ))}
+          
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
+                <span className="text-indigo-600 text-sm font-medium">A</span>
+              </div>
+              <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+                <div className="flex space-x-1.5">
+                  <div className="w-2 h-2 rounded-full bg-gray-300 animate-bounce"></div>
+                  <div className="w-2 h-2 rounded-full bg-gray-300 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-2 h-2 rounded-full bg-gray-300 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+        
+        {/* Quick Response Suggestions */}
+       
+          <div className="p-4 bg-white border-t border-gray-100">
+            <p className="text-xs text-gray-500 mb-2 font-medium">Suggested questions:</p>
+            <div className="flex flex-wrap gap-2">
+              {quickResponses.map((response, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleQuickResponse(response)}
+                  className="px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-full hover:bg-indigo-100 transition-colors"
+                >
+                  {response}
+                </button>
+              ))}
+            </div>
           </div>
+        
+        
+        {/* Input Area */}
+        <div className="bg-white border-t border-gray-200 p-4">
+          <div className="flex items-center  w-2/3 mx-auto bg-gray-50 rounded-full shadow-sm border border-gray-200 pr-1">
+         
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputText}
+              onChange={handleInputChange}
+              onKeyPress={handleKeyPress}
+              placeholder="Type your message..."
+              className="flex-1 py-2.5 px-3 bg-transparent border-none focus:outline-none text-sm"
+            />
+            <button
+              onClick={() => sendMessageToBackend()}
+              disabled={inputText.trim() === ''}
+              className={`p-2 rounded-full ${
+                inputText.trim() === ''
+                  ? 'text-gray-300 cursor-not-allowed'
+                  : 'text-white bg-indigo-600 hover:bg-indigo-700 transition-colors'
+              }`}
+            >
+              <Send size={16} />
+            </button>
+          </div>
+          
+          {/* Emoji Panel */}
+         
+          
+          <p className="text-xs text-gray-400 mt-2 text-center">
+            Your wellness assistant is here to help. Responses are AI-generated.
+          </p>
         </div>
       </div>
     </div>

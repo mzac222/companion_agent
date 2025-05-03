@@ -41,7 +41,7 @@ export const getChatHistory = async () => {
 // Add this function to your services/api.js file
 export const getChatById = async (chatId) => {
     try {
-      const response = await fetch(`/api/chats/${chatId}`);
+      const response = await fetch(`/api/sessions/${chatId}`);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

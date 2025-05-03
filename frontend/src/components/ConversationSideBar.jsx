@@ -25,10 +25,11 @@ const ConversationSidebar = ({ isOpen, onClose, onNewSession, onSelectConversati
       setIsLoading(true);
       const response = await fetch('/api/sessions');
       
+      
       if (!response.ok) throw new Error('Failed to fetch sessions');
       
       const data = await response.json();
-      
+      console.log(data);
       if (data.sessions) {
         const processedSessions = data.sessions.map(session => {
           const firstUserMessage = session.messages?.find(m => m.role === 'user');

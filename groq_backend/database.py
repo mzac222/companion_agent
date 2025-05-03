@@ -132,11 +132,24 @@ def get_chat_by_session(session_id):
         conn = get_db_connection()
         cursor = conn.cursor()
         
+        # First verify session exists
+        cursor.execute("""
+            SELECT COUNT(*) FROM chat_history 
+            WHERE session_id = ?
+        """, (session_id,))
+        
+        if cursor.fetchone()[0] == 0:
+            return {
+                "session_id": session_id,
+                "messages": []
+            }
+        
+        # Get all messages
         cursor.execute("""
             SELECT id, timestamp, user_query, bot_response, is_user
             FROM chat_history
             WHERE session_id = ?
-            ORDER BY message_order ASC
+            ORDER BY timestamp ASC, message_order ASC
         """, (session_id,))
         
         messages = []
@@ -149,11 +162,9 @@ def get_chat_by_session(session_id):
             })
             
         return {
-            "session_id": session_id,
+            "id": session_id,
             "messages": messages
         }
     except Exception as e:
-        logger.error(f"Error fetching chat session: {str(e)}")
+        logger.error(f"Error fetching chat session {session_id}: {str(e)}")
         raise
-
-# Remove the test code at the bottom of the file

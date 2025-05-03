@@ -4,7 +4,6 @@ import Home from './Pages/home';
 import HistoryPage from './Pages/HistoryPage';// In App.js
 import MentalHealthLandingPage from './Pages/LandingPage/Landing';
 import AllArticlesPage from './Pages/LandingPage/AllArticles';
-import 'regenerator-runtime/runtime';
 function App() {
   return (
     <Routes>

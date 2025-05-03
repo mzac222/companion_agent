@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, PlusCircle, ArrowLeft, Search, X, Clock } from 'lucide-react';
-import { useNavigate  } from 'react-router-dom';
-const ConversationSidebar = ({ isOpen, onClose, onNewSession, onSelectConversation, currentSessionId }) => {
+import { useNavigate } from 'react-router-dom';
+
+const ConversationSidebar = ({ isOpen, onClose, onNewSession, onSelectConversation, currentSessionId, userId }) => {
   const [conversations, setConversations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeId, setActiveId] = useState(currentSessionId);
-  const navigate=useNavigate();
-  // Fetch conversations list
+  const navigate = useNavigate();
+
+  // Fetch conversations list when userId changes
   useEffect(() => {
-    fetchConversations();
-  }, []);
+    if (userId) {
+      fetchConversations();
+    }
+  }, [userId]);
 
   // Update active ID whenever currentSessionId changes
   useEffect(() => {
@@ -23,25 +27,49 @@ const ConversationSidebar = ({ isOpen, onClose, onNewSession, onSelectConversati
   const fetchConversations = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/sessions');
+      setError(null);
       
+      const response = await fetch(`/api/sessions?user_id=${userId}`);
       
       if (!response.ok) throw new Error('Failed to fetch sessions');
       
       const data = await response.json();
-      console.log(data);
+      
       if (data.sessions) {
-        const processedSessions = data.sessions.map(session => {
-          const firstUserMessage = session.messages?.find(m => m.role === 'user');
-          const lastAssistantMessage = [...session.messages]
-            .reverse()
-            .find(m => m.role === 'assistant');
-            
+        // First, group messages by session_id
+        const sessionsMap = data.sessions.reduce((acc, session) => {
+          if (!acc[session.session_id]) {
+            acc[session.session_id] = {
+              id: session.session_id,
+              created_at: session.created_at,
+              updated_at: session.updated_at,
+              messages: []
+            };
+          }
+          
+          // Add the message to the session
+          acc[session.session_id].messages.push({
+            role: session.last_message_role,
+            content: session.last_message,
+            timestamp: session.updated_at || session.created_at
+          });
+          
+          return acc;
+        }, {});
+  
+        // Then process each session
+        const processedSessions = Object.values(sessionsMap).map(session => {
+          const userMessages = session.messages.filter(m => m.role === 'user');
+          const assistantMessages = session.messages.filter(m => m.role === 'assistant');
+          
+          const lastUserMessage = userMessages[0]; // Most recent user message
+          const lastAssistantMessage = assistantMessages[0]; // Most recent assistant message
+          
           return {
             id: session.id,
-            title: firstUserMessage?.content || "New Conversation",
+            title: lastUserMessage?.content || "New Conversation",
             preview: lastAssistantMessage?.content || "No messages yet",
-            timestamp: session.updated_at
+            timestamp: session.updated_at || session.created_at
           };
         }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         
@@ -49,6 +77,7 @@ const ConversationSidebar = ({ isOpen, onClose, onNewSession, onSelectConversati
       }
     } catch (error) {
       setError(error.message);
+      console.error('Error fetching conversations:', error);
     } finally {
       setIsLoading(false);
     }
@@ -109,27 +138,50 @@ const ConversationSidebar = ({ isOpen, onClose, onNewSession, onSelectConversati
       {/* Header */}
       <div className="py-5 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
         <div className="flex items-center justify-between">
-          <h2 onClick={()=>{
-            navigate('/');
-        }} className="text-lg font-bold cursor-pointer"> Go Home</h2>
+          <h2 
+            onClick={() => navigate('/')} 
+            className="text-lg font-bold cursor-pointer hover:text-indigo-100 transition-colors"
+          >
+            Go Home
+          </h2>
+         
           <div className="flex space-x-2">
-            <button 
-              onClick={handleNewSession}
-              className="p-1.5 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-all"
-              title="New Conversation"
-            >
-              <PlusCircle className="w-5 h-5" />
-            </button>
-            <button 
-              onClick={onClose}
-              className="p-1.5 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-all md:hidden"
-              title="Close Sidebar"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
+      <button 
+        onClick={() => {
+          // Simple logout - clear localStorage
+          localStorage.removeItem('user_id');
+          localStorage.removeItem('username');
+          localStorage.removeItem('currentSessionId');
+          // Refresh the page to reset the app state
+          navigate('/login')
+        }}
+        className="p-1.5 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-all"
+        title="Logout"
+      >
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="w-5 h-5" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
+        >
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+      </button>
+      <button 
+        onClick={onClose}
+        className="p-1.5 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-all md:hidden"
+        title="Close Sidebar"
+      >
+        <ArrowLeft className="w-5 h-5" />
+      </button>
+    </div>
+  </div>
         {/* Search */}
         <div className="mt-4 relative">
           <div className="relative">
@@ -169,7 +221,7 @@ const ConversationSidebar = ({ isOpen, onClose, onNewSession, onSelectConversati
       )}
 
       {/* Conversation List */}
-      <div className="flex-1 overflow-x-hidden z">
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-200 scrollbar-track-transparent">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-32 p-4">
             <div className="w-8 h-8 border-t-2 border-indigo-600 border-r-2 border-b-2 border-transparent rounded-full animate-spin"></div>
@@ -217,8 +269,8 @@ const ConversationSidebar = ({ isOpen, onClose, onNewSession, onSelectConversati
                     : 'hover:bg-gray-50 border-transparent'
                   } border`}
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex items-start space-x-3">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex items-start space-x-3 flex-1 min-w-0">
                     <div className={`p-2 rounded-full flex-shrink-0
                       ${activeId === conversation.id 
                         ? 'bg-indigo-500 text-white' 
@@ -237,9 +289,9 @@ const ConversationSidebar = ({ isOpen, onClose, onNewSession, onSelectConversati
                       </p>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end">
-                
-                  </div>
+                  <span className="text-xs text-gray-400 whitespace-nowrap mt-1 flex-shrink-0">
+                    {formatDate(conversation.timestamp)}
+                  </span>
                 </div>
               </div>
             ))}
@@ -251,9 +303,9 @@ const ConversationSidebar = ({ isOpen, onClose, onNewSession, onSelectConversati
       <div className="p-4 border-t border-gray-200 bg-white bg-opacity-70 backdrop-blur-sm">
         <button
           onClick={handleNewSession}
-          className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 
-            hover:from-indigo-700 hover:to-purple-700 text-white py-2.5 px-4 rounded-lg 
-            transition-all duration-200 shadow-md hover:shadow-lg"
+          className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-indigo-500 to-purple-500 
+            hover:from-indigo-600 hover:to-purple-600 text-white py-2.5 px-4 rounded-lg 
+            transition-all duration-200 shadow-sm hover:shadow-md"
         >
           <PlusCircle className="w-4 h-4" />
           <span className="font-medium">New Chat</span>

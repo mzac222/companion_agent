@@ -221,34 +221,34 @@ function Home() {
     }
   };
 
-  const loadChatById = async (chatId) => {
-    try {
-      setIsLoading(true);
-      const response = await getChatById(chatId);
+  // const loadChatById = async (chatId) => {
+  //   try {
+  //     setIsLoading(true);
+  //     const response = await getChatById(chatId);
       
-      if (response.status === 'success' && response.chat) {
-        const formattedMessages = response.chat.messages.map(msg => ({
-          name: msg.role === 'user' ? 'User' : 'Star',
-          message: msg.content,
-          timestamp: new Date(msg.timestamp || Date.now()).toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          })
-        }));
+  //     if (response.status === 'success' && response.chat) {
+  //       const formattedMessages = response.chat.messages.map(msg => ({
+  //         name: msg.role === 'user' ? 'User' : 'Star',
+  //         message: msg.content,
+  //         timestamp: new Date(msg.timestamp || Date.now()).toLocaleTimeString([], { 
+  //           hour: '2-digit', 
+  //           minute: '2-digit' 
+  //         })
+  //       }));
         
-        setMessages(formattedMessages);
-        setCurrentSession(chatId);
-      } else {
-        console.error('Invalid chat data received');
-        showWelcomeMessage(username);
-      }
-    } catch (error) {
-      console.error('Error loading chat:', error);
-      showWelcomeMessage(username);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //       setMessages(formattedMessages);
+  //       setCurrentSession(chatId);
+  //     } else {
+  //       console.error('Invalid chat data received');
+  //       showWelcomeMessage(username);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error loading chat:', error);
+  //     showWelcomeMessage(username);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -258,74 +258,99 @@ function Home() {
     scrollToBottom();
   }, [messages, showEmojis]);
   
-  const sendMessageToBackend = async (text = inputText) => {
-    if (text.trim() === '') return;
+ // In your Home component
+const sendMessageToBackend = async (text = inputText) => {
+  if (text.trim() === '') return;
+  
+  const messageText = text;
+  setInputText('');
+  setShowEmojis(false);
+  
+  // Add user message immediately
+  const userMessage = {
+    name: 'User',
+    message: messageText,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  };
+  setMessages(prev => [...prev, userMessage]);
+  setIsLoading(true);
+  
+  try {
+    const userId = localStorage.getItem('user_id');
+    const response = await sendMessage(messageText, currentSession, userId);
     
-    const messageText = text;
-    setInputText('');
-    setShowEmojis(false);
-    
-    // Add user message immediately
-    const userMessage = {
-      name: 'User',
-      message: messageText,
+    const botMessage = {
+      name: 'Star',
+      message: response.response,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
-    setMessages(prev => [...prev, userMessage]);
-    setIsLoading(true);
     
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: messageText,
-          session_id: currentSession
-        })
-      });
-      
-      const data = await response.json();
-      
-      const botMessage = {
-        name: 'Star',
-        message: data.response,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      
-      setMessages(prev => [...prev, botMessage]);
-      
-      // Speak the bot's response if text-to-speech is enabled
-      if (textToSpeechEnabled) {
-        speakText(data.response);
-      }
-      
-      if (!currentSession && data.session_id) {
-        setCurrentSession(data.session_id);
-        window.history.replaceState(null, '', `/chat/${data.session_id}`);
-      }
-    } catch (error) {
-      console.error('Error sending message:', error);
-      const errorMessage = {
-        name: 'Star',
-        message: error.message || 'Sorry, I encountered an error. Please try again later.',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages(prev => [...prev, errorMessage]);
-      
-      // Speak the error message if text-to-speech is enabled
-      if (textToSpeechEnabled) {
-        speakText(errorMessage.message);
-      }
-    } finally {
-      setIsLoading(false);
-      if (listening) {
-        SpeechRecognition.stopListening();
-        resetTranscript();
-      }
+    setMessages(prev => [...prev, botMessage]);
+    
+    // Speak the bot's response if text-to-speech is enabled
+    if (textToSpeechEnabled) {
+      speakText(response.response);
     }
-  };
+    
+    if (!currentSession && response.session_id) {
+      setCurrentSession(response.session_id);
+      window.history.replaceState(null, '', `/chat/${response.session_id}`);
+    }
+  } catch (error) {
+    console.error('Error sending message:', error);
+    const errorMessage = {
+      name: 'Star',
+      message: error.message || 'Sorry, I encountered an error. Please try again later.',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    setMessages(prev => [...prev, errorMessage]);
+    
+    // Speak the error message if text-to-speech is enabled
+    if (textToSpeechEnabled) {
+      speakText(errorMessage.message);
+    }
+  } finally {
+    setIsLoading(false);
+    if (listening) {
+      SpeechRecognition.stopListening();
+      resetTranscript();
+    }
+  }
+};
+
+const loadChatById = async (chatId) => {
+  try {
+    setIsLoading(true);
+    const userId = localStorage.getItem('user_id');
+    const response = await getChatById(chatId, userId);
+    
+    console.log('Chat data:', response); // Debugging log
+    
+    if (response.chat && response.chat.messages) {
+      const formattedMessages = response.chat.messages.map(msg => ({
+        name: msg.role === 'user' ? 'User' : 'Star',
+        message: msg.content,
+        timestamp: new Date(msg.timestamp || Date.now()).toLocaleTimeString([], { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        })
+      }));
+      
+      setMessages(formattedMessages);
+      setCurrentSession(chatId);
+    } else {
+      console.error('Invalid chat data received:', response);
+      showWelcomeMessage(username);
+    }
+  } catch (error) {
+    console.error('Error loading chat:', error);
+    showWelcomeMessage(username);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+// Update the ConversationSidebar component usage
 
   const handleInputChange = (e) => {
     setInputText(e.target.value);
@@ -387,6 +412,7 @@ function Home() {
         onNewSession={handleNewSession}
         onSelectConversation={handleSelectConversation}
         currentSessionId={currentSession}
+        userId={localStorage.getItem('user_id')}
       />
       
       {/* Main Chat Area */}

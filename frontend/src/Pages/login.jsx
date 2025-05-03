@@ -4,27 +4,72 @@ import { useNavigate } from 'react-router-dom';
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [email, setEmail] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
-
-    if (username && password) {
-      localStorage.setItem('username', username);
-      navigate('/chat');
-    } else {
+    
+    if (!username || !password) {
       alert('Please enter both username and password');
+      return;
+    }
+  
+    const endpoint = isRegistering ? '/api/register' : '/api/login';
+    const body = isRegistering ? { username, email, password } : { username, password };
+  
+    try {
+      const response = await fetch(`${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+  
+      const data = await response.json();
+  
+      if (data.success) {
+        if (isRegistering) {
+          alert('Registration successful! Please log in.');
+          setIsRegistering(false); // Switch to login form
+          setEmail('');
+          setPassword('');
+        } else {
+          localStorage.setItem('user_id', data.user_id);
+          localStorage.setItem('username', data.username);
+          navigate('/chat'); // Redirect to chat page
+        }
+      } else {
+        alert(data.message || 'Authentication failed');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred during authentication');
     }
   };
-
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-indigo-200 to-purple-300">
       <form
-        onSubmit={handleLogin}
+        onSubmit={handleAuth}
         className="bg-white p-10 rounded-2xl shadow-2xl w-96 space-y-6"
       >
-        <h2 className="text-3xl font-bold text-center text-purple-700">Welcome Back</h2>
-        <p className="text-center text-sm text-gray-500">Log in to continue</p>
+        <h2 className="text-3xl font-bold text-center text-purple-700">
+          {isRegistering ? 'Create Account' : 'Welcome Back'}
+        </h2>
+        
+        {isRegistering && (
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        )}
+        
         <input
           type="text"
           placeholder="Username"
@@ -32,6 +77,7 @@ function Login() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
+        
         <input
           type="password"
           placeholder="Password"
@@ -39,13 +85,25 @@ function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+        
         <button
+         
           type="submit"
           className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition duration-300"
         >
-          Log In
+          {isRegistering ? 'Register' : 'Log In'}
         </button>
-        <p className="text-center text-xs text-gray-400">Your mental wellness matters 💜</p>
+        
+        <p className="text-center text-xs text-gray-400">
+          {isRegistering ? 'Already have an account? ' : 'Need an account? '}
+          <button 
+            type="button"
+            className="text-purple-600 hover:underline"
+            onClick={() => setIsRegistering(!isRegistering)}
+          >
+            {isRegistering ? 'Log in' : 'Register'}
+          </button>
+        </p>
       </form>
     </div>
   );

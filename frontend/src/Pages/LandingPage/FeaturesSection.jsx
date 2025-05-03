@@ -1,4 +1,4 @@
-import { MessageCircle, Shield, Clock, BookOpen, Heart, ArrowRight } from 'lucide-react';
+import { MessageCircle, Shield, Clock, BookOpen, Heart, ArrowRight, History } from 'lucide-react';
 
 export default function FeaturesSection() {
   return (
@@ -45,14 +45,14 @@ export default function FeaturesSection() {
             </p>
           </div>
 
-          {/* Feature 4 */}
+          {/* Feature 4 – Replaced with History */}
           <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 duration-300 ease-in-out border border-gray-100 hover:bg-indigo-50">
             <div className="bg-indigo-100 p-4 rounded-full inline-block mb-6">
-              <BookOpen className="h-8 w-8 text-indigo-600" />
+              <History className="h-8 w-8 text-indigo-600" />
             </div>
-            <h3 className="text-2xl font-semibold mb-4 text-gray-900">Evidence-Based Techniques</h3>
+            <h3 className="text-2xl font-semibold mb-4 text-gray-900">Conversation History</h3>
             <p className="text-gray-600">
-              Access proven strategies from cognitive behavioral therapy, mindfulness, and positive psychology.
+              Easily revisit previous chats and track your emotional growth over time.
             </p>
           </div>
 

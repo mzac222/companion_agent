@@ -24,8 +24,8 @@ export default function Navigation() {
             <a href="#blog" className="text-gray-600 hover:text-indigo-600 transition-colors">Blog</a>
             <a href="/all-articles" className="text-gray-600 hover:text-indigo-600 transition-colors">All Articles</a>
             <a href="#contact" className="text-gray-600 hover:text-indigo-600 transition-colors">Contact</a>
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
-              Try it free
+            <button onClick={()=>{navigate("/login")}} className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
+              Try it Out !
             </button>
           </div>
           

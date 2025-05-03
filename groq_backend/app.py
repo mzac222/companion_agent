@@ -120,20 +120,31 @@ def create_app():
             conn = get_db_connection()
             cursor = conn.cursor()
             
+            # First check if session exists
+            cursor.execute("SELECT * FROM sessions WHERE id = ?", (session_id,))
+            session = cursor.fetchone()
+            
+            if not session:
+                return jsonify({
+                    "chat": {
+                        "id": session_id,
+                        "messages": []
+                    },
+                    "status": "success"
+                })
+            
             # Get all messages for this session
-            cursor.execute("""
-                SELECT timestamp, user_query, bot_response, is_user
-                FROM chat_history
-                WHERE session_id = ?
-                ORDER BY timestamp ASC
-            """, (session_id,))
+            cursor.execute(
+                "SELECT * FROM messages WHERE session_id = ? ORDER BY timestamp",
+                (session_id,)
+            )
             
             messages = []
-            for row in cursor.fetchall():
+            for msg in cursor.fetchall():
                 messages.append({
-                    "timestamp": row["timestamp"],
-                    "content": row["user_query"] if row["is_user"] else row["bot_response"],
-                    "role": "user" if row["is_user"] else "assistant"
+                    "timestamp": msg["timestamp"],
+                    "content": msg["content"],
+                    "role": msg["role"]
                 })
             
             return jsonify({

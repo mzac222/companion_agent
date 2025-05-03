@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, PlusCircle, ArrowLeft, Search, X, Clock } from 'lucide-react';
-
+import { useNavigate  } from 'react-router-dom';
 const ConversationSidebar = ({ isOpen, onClose, onNewSession, onSelectConversation, currentSessionId }) => {
   const [conversations, setConversations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeId, setActiveId] = useState(currentSessionId);
-
+  const navigate=useNavigate();
   // Fetch conversations list
   useEffect(() => {
     fetchConversations();
@@ -109,7 +109,9 @@ const ConversationSidebar = ({ isOpen, onClose, onNewSession, onSelectConversati
       {/* Header */}
       <div className="py-5 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold">Conversations</h2>
+          <h2 onClick={()=>{
+            navigate('/');
+        }} className="text-lg font-bold cursor-pointer"> Go Home</h2>
           <div className="flex space-x-2">
             <button 
               onClick={handleNewSession}

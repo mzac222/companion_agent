@@ -1,116 +1,120 @@
 import { useState } from 'react';
 import { ArrowRight, ChevronDown } from 'lucide-react';
+import blogs from "../../data/data"
 
 export default function BlogSection() {
+  // Use the imported blogs from the pasted file
+ 
+  
   const [activeTab, setActiveTab] = useState('all');
   
-  const blogs = [
-    {
-      id: 1,
-      title: "Understanding Anxiety in Daily Life",
-      excerpt: "Learn about anxiety triggers and practical coping mechanisms.",
-      category: "anxiety",
-      image: "/api/placeholder/600/400",
-      date: "April 25, 2025"
-    },
-    {
-      id: 2,
-      title: "Mindfulness Techniques for Better Sleep",
-      excerpt: "Simple exercises to calm your mind before bedtime.",
-      category: "mindfulness",
-      image: "/api/placeholder/600/400",
-      date: "April 18, 2025"
-    },
-    {
-      id: 3,
-      title: "Managing Work-Related Stress",
-      excerpt: "Effective strategies to maintain balance in high-pressure environments.",
-      category: "stress",
-      image: "/api/placeholder/600/400",
-      date: "April 12, 2025"
-    },
-    {
-      id: 4,
-      title: "Building Healthy Relationships",
-      excerpt: "Communication skills to foster deeper connections.",
-      category: "relationships",
-      image: "/api/placeholder/600/400",
-      date: "April 5, 2025"
-    }
-  ];
+  // Get unique categories from blogs for dynamic tabs
+  const categories = ['all', ...new Set(blogs.map(blog => blog.category))];
   
-  const filteredBlogs = activeTab === 'all' 
-    ? blogs 
+  // Filter blogs based on active tab
+  const filteredBlogs = activeTab === 'all'
+    ? blogs
     : blogs.filter(blog => blog.category === activeTab);
+  
+  // Format category name for display
+  const formatCategoryName = (category) => {
+    if (category === 'all') return 'All';
+    return category.charAt(0).toUpperCase() + category.slice(1).replace('-', ' ');
+  };
+  
+  // Get color based on category for card accents
+  const getCategoryColor = (category) => {
+    const colors = {
+      anxiety: 'bg-blue-100 text-blue-800',
+      mindfulness: 'bg-green-100 text-green-800',
+      stress: 'bg-orange-100 text-orange-800',
+      relationships: 'bg-purple-100 text-purple-800',
+      depression: 'bg-red-100 text-red-800',
+      resilience: 'bg-yellow-100 text-yellow-800',
+      'seasonal-affective-disorder': 'bg-indigo-100 text-indigo-800',
+      wellness: 'bg-teal-100 text-teal-800'
+    };
     
+    return colors[category] || 'bg-gray-100 text-gray-800';
+  };
+
   return (
-    <section id="blog" className="py-20 bg-white">
+    <section id="blog" className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 fade-in-section opacity-0">
+        <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Mental Health Resources</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Explore our collection of articles written by mental health professionals to support your well-being.
           </p>
         </div>
         
-        {/* Filter tabs */}
-        <div className="flex flex-wrap justify-center mb-12 fade-in-section opacity-0">
-          <button 
-            onClick={() => setActiveTab('all')}
-            className={`m-2 px-6 py-2 rounded-full ${activeTab === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-          >
-            All
-          </button>
-          <button 
-            onClick={() => setActiveTab('anxiety')}
-            className={`m-2 px-6 py-2 rounded-full ${activeTab === 'anxiety' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-          >
-            Anxiety
-          </button>
-          <button 
-            onClick={() => setActiveTab('mindfulness')}
-            className={`m-2 px-6 py-2 rounded-full ${activeTab === 'mindfulness' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-          >
-            Mindfulness
-          </button>
-          <button 
-            onClick={() => setActiveTab('stress')}
-            className={`m-2 px-6 py-2 rounded-full ${activeTab === 'stress' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-          >
-            Stress Management
-          </button>
-          <button 
-            onClick={() => setActiveTab('relationships')}
-            className={`m-2 px-6 py-2 rounded-full ${activeTab === 'relationships' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-          >
-            Relationships
-          </button>
+        {/* Filter tabs - scrollable on mobile */}
+        <div className="mb-12 overflow-x-auto pb-2">
+          <div className="flex space-x-2 min-w-max px-4">
+            {categories.slice(0, 8).map(category => (
+              <button
+                key={category}
+                onClick={() => setActiveTab(category)}
+                className={`px-6 py-2 rounded-full transition-all duration-200 whitespace-nowrap ${
+                  activeTab === category 
+                    ? 'bg-indigo-600 text-white shadow-md' 
+                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                }`}
+              >
+                {formatCategoryName(category)}
+              </button>
+            ))}
+          </div>
         </div>
         
         {/* Blog cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {filteredBlogs.map(blog => (
-            <div key={blog.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow fade-in-section opacity-0">
-              <img src={blog.image} alt={blog.title} className="w-full h-48 object-cover" />
-              <div className="p-6">
-                <span className="text-xs text-gray-500">{blog.date}</span>
-                <h3 className="font-semibold text-lg mt-2 mb-2 text-gray-900">{blog.title}</h3>
-                <p className="text-gray-600 text-sm mb-4">{blog.excerpt}</p>
-                <a href="#" className="text-indigo-600 font-medium inline-flex items-center hover:text-indigo-800">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredBlogs.slice(0, 4).map(blog => (
+            <div key={blog.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100 flex flex-col h-full">
+              {/* Category label at top of card */}
+              <div className="pt-4 px-6">
+                <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${getCategoryColor(blog.category)}`}>
+                  {formatCategoryName(blog.category)}
+                </span>
+              </div>
+              
+              <div className="px-6 pb-6 flex-1 flex flex-col">
+                <div className="flex-1">
+                  <div className="flex justify-between items-center mb-2 mt-3">
+                    <span className="text-xs text-gray-500">{blog.date}</span>
+                  </div>
+                  <h3 className="font-semibold text-lg mb-3 text-gray-900 line-clamp-2">{blog.title}</h3>
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">{blog.excerpt}</p>
+                </div>
+                
+                <a 
+                  href={blog.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-indigo-600 font-medium inline-flex items-center hover:text-indigo-800 mt-2 group"
+                >
                   Read more
-                  <ArrowRight className="ml-1 h-4 w-4" />
+                  <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </a>
               </div>
             </div>
           ))}
         </div>
         
-        <div className="text-center mt-12 fade-in-section opacity-0">
-          <a href="#" className="inline-flex items-center text-indigo-600 font-medium hover:text-indigo-800">
-            Browse all articles
-            <ChevronDown className="ml-1 h-4 w-4" />
-          </a>
-        </div>
+        {filteredBlogs.length > 6 && (
+          <div className="text-center mt-12">
+            <button className="bg-white hover:bg-gray-50 text-indigo-600 font-medium px-6 py-3 rounded-full shadow-sm border border-gray-200 inline-flex items-center transition-colors">
+              Browse all articles
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </button>
+          </div>
+        )}
+        
+        {filteredBlogs.length === 0 && (
+          <div className="text-center py-16">
+            <p className="text-gray-500">No articles found in this category.</p>
+          </div>  
+        )}
       </div>
     </section>
   );

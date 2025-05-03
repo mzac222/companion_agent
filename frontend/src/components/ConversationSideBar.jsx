@@ -235,9 +235,7 @@ const ConversationSidebar = ({ isOpen, onClose, onNewSession, onSelectConversati
                     </div>
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className="text-xs text-gray-400 whitespace-nowrap">
-                      {formatDate(conversation.timestamp)}
-                    </span>
+                
                   </div>
                 </div>
               </div>

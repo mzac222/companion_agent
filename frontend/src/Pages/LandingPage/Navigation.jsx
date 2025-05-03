@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MessageCircle } from 'lucide-react';
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate=useNavigate();
   
   return (
     <nav className="bg-white shadow-md fixed w-full z-50">
@@ -20,6 +22,7 @@ export default function Navigation() {
             <a href="#features" className="text-gray-600 hover:text-indigo-600 transition-colors">Features</a>
             <a href="#about" className="text-gray-600 hover:text-indigo-600 transition-colors">About</a>
             <a href="#blog" className="text-gray-600 hover:text-indigo-600 transition-colors">Blog</a>
+            <a href="/all-articles" className="text-gray-600 hover:text-indigo-600 transition-colors">All Articles</a>
             <a href="#contact" className="text-gray-600 hover:text-indigo-600 transition-colors">Contact</a>
             <button className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
               Try it free
@@ -47,8 +50,9 @@ export default function Navigation() {
             <a href="#features" className="block px-3 py-2 text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md">Features</a>
             <a href="#about" className="block px-3 py-2 text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md">About</a>
             <a href="#blog" className="block px-3 py-2 text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md">Blog</a>
+            <a href="/all-articles" className="block px-3 py-2 text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md">All Articles</a>
             <a href="#contact" className="block px-3 py-2 text-gray-600 hover:text-indigo-600 hover:bg-gray-50 rounded-md">Contact</a>
-            <button className="w-full text-left px-3 py-2 bg-indigo-600 text-white rounded-md">Try it free</button>
+            <button  onClick={() => navigate("/login")} className="w-full text-left px-3 py-2 bg-indigo-600 text-white rounded-md">Try it free</button>
           </div>
         </div>
       )}

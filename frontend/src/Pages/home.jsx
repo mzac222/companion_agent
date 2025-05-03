@@ -86,15 +86,15 @@ function Home() {
   
   // Update the loadChatById function
  
-  // const showWelcomeMessage = (username) => {
-  //   const initialMessage = {
-  //     name: 'Star',
-  //     message: `Hello ${username || 'there'}! I'm Star, your mental health companion. How are you feeling today?`,
-  //     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  //   };
-  //   setMessages([initialMessage]);
-  //   setCurrentSession(null);
-  // };
+  const showWelcomeMessage = (username) => {
+    const initialMessage = {
+      name: 'Star',
+      message: `Hello ${username || 'there'}! I'm Star, your mental health companion. How are you feeling today?`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    setMessages([initialMessage]);
+    setCurrentSession(null);
+  };
  
   const loadChatById = async (chatId) => {
     try {
@@ -263,94 +263,124 @@ const handleNewSession = () => {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Chat Header */}
-        <header className="bg-white shadow py-3 px-6 flex items-center justify-between z-10">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 md:hidden"
-              aria-label="Open sidebar"
-            >
-              <Menu size={20} />
-            </button>
-            <div>
-              <h1 className="text-lg font-medium text-gray-800">
-                {currentSession ? "Conversation" : "New Chat"}
-              </h1>
-              <p className="text-xs text-gray-500">
-                {currentSession ? "Continuing your conversation" : "Start a new chat"}
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-1">
-            <button
-              onClick={() => setShowTips(!showTips)}
-              className="p-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors"
-              title="Wellness Tips"
-            >
-              <Lightbulb size={18} />
-            </button>
-            <button
-              onClick={toggleSessionMenu}
-              className="p-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors relative"
-              title="Session Options"
-            >
-              <Settings size={18} />
-              {showSessionMenu && (
-                <div 
-                  ref={sessionMenuRef}
-                  className="absolute right-0 top-full mt-1 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-50"
-                >
-                  <button
-                    onClick={handleNewSession}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                  >
-                    New Session
-                  </button>
-                  {currentSession && (
-                    <button
-                      onClick={() => navigator.clipboard.writeText(currentSession)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                    >
-                      Copy Session ID
-                    </button>
-                  )}
-                </div>
-              )}
-            </button>
-          </div>
-        </header>
-        
-        {/* Wellness Tips Panel */}
+        <header className=" bg-gradient-to-r from-indigo-600 to-purple-600 text-white 0 shadow-md px-6 py-4 flex items-center justify-between sticky top-0 z-50 text-white">
+  {/* Left Section: Title & Sidebar Toggle */}
+  <div className="flex items-center gap-4">
+    {/* Sidebar toggle for mobile */}
+    <button
+      onClick={() => setSidebarOpen(true)}
+      className="p-3 rounded-md bg-white bg-opacity-20 hover:bg-opacity-40 transition-colors text-white md:hidden"
+      aria-label="Open sidebar"
+    >
+      <Menu size={24} />
+    </button>
+
+    {/* Page title and subtitle with fun text */}
+    <div>
+      <h1 className="text-lg md:text-xl font-extrabold tracking-wide">
+        {currentSession ? "Let's Chat! 💬" : "Start Your Mindful Journey 🌟"}
+      </h1>
+      <p className="text-sm italic opacity-90">
+        {currentSession ? "Keep the conversation flowing..." : "Fresh thoughts, fresh start!"}
+      </p>
+    </div>
+  </div>
+
+  {/* Right Section: Icons & Dropdown */}
+  <div className="flex items-center gap-3 relative">
+    {/* Wellness Tips */}
+    <button
+      onClick={() => setShowTips(!showTips)}
+      className="p-3 rounded-md bg-white bg-opacity-20 hover:bg-opacity-40 transition-colors text-white"
+      title="Wellness Tips"
+    >
+      <Lightbulb size={20} />
+    </button>
+
+    {/* Session Menu */}
+    <button
+      onClick={toggleSessionMenu}
+      className="p-3 rounded-md bg-white bg-opacity-20 hover:bg-opacity-40 transition-colors text-white"
+      title="Session Options"
+    >
+      <Settings size={20} />
+    </button>
+
+    {/* Dropdown Menu */}
+    {showSessionMenu && (
+      <div
+        ref={sessionMenuRef}
+        className="absolute right-0 top-full mt-2 w-52 bg-white rounded-md shadow-lg z-50 text-gray-800"
+      >
+        <button
+          onClick={handleNewSession}
+          className="w-full text-left px-5 py-3 text-sm hover:bg-gray-100"
+        >
+          New Session
+        </button>
+        {currentSession && (
+          <button
+            onClick={() => navigator.clipboard.writeText(currentSession)}
+            className="w-full text-left px-5 py-3 text-sm hover:bg-gray-100"
+          >
+            Copy Session ID
+          </button>
+        )}
+      </div>
+    )}
+  </div>
+</header>
+
+
+        {/* Wellness Tips Banner - Enhanced */}
         {showTips && (
-          <div className="bg-indigo-50 p-3 border-b border-indigo-100">
-            <div className="flex justify-between items-center">
-              <h3 className="font-medium text-indigo-800 text-sm">Today's Wellness Tip</h3>
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 shadow-md relative overflow-hidden">
+            <div className="absolute inset-0 bg-white/5 transform -skew-y-12"></div>
+            <div className="flex justify-between items-center relative z-10">
+              <div className="flex items-center space-x-2">
+                <Lightbulb size={18} className="text-yellow-300" />
+                <h3 className="font-semibold text-white">Today's Wellness Tip</h3>
+              </div>
               <button
                 onClick={() => setShowTips(false)}
-                className="text-indigo-500 hover:text-indigo-700"
+                className="text-white/70 hover:text-white transition-colors"
                 aria-label="Close tips"
               >
                 <X size={16} />
               </button>
             </div>
-            <p className="mt-1 text-indigo-700 text-sm">{todaysTip}</p>
+            <p className="mt-1.5 text-white/90 text-sm leading-relaxed max-w-3xl">{todaysTip}</p>
           </div>
         )}
+        
+        {/* Quick Response Suggestions - Moved to top */}
+        <div className="py-2.5 px-4 bg-white border-b border-gray-100 shadow-sm">
+          <div className="flex flex-wrap gap-2">
+            {quickResponses.map((response, index) => (
+              <button
+                key={index}
+                onClick={() => handleQuickResponse(response)}
+                className="px-3.5 py-1.5 text-xs font-medium rounded-full transition-all text-indigo-700 bg-indigo-50 hover:bg-indigo-100 hover:shadow-sm"
+              >
+                {response}
+              </button>
+            ))}
+          </div>
+        </div>
         
         {/* Messages Area */}
         <div 
           ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto px-4 py-6 space-y-5"
+          className="flex-1 overflow-y-auto px-4 py-6 space-y-2"
         >
           
             <div className="flex flex-col items-center justify-center h-full text-center px-4">
-              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-2">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-8 h-8 text-indigo-600">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-800 mb-2">Welcome to Wellness Chat</h3>
+              <h3 className="text-lg font-medium text-gray-800 mb-2">Welcome to MindfulChat</h3>
               <p className="text-gray-500 max-w-md">Start a conversation to get personalized wellness advice, meditation guidance, and more.</p>
             </div>
           
@@ -408,28 +438,9 @@ const handleNewSession = () => {
           <div ref={messagesEndRef} />
         </div>
         
-        {/* Quick Response Suggestions */}
-       
-          <div className="p-4 bg-white border-t border-gray-100">
-            <p className="text-xs text-gray-500 mb-2 font-medium">Suggested questions:</p>
-            <div className="flex flex-wrap gap-2">
-              {quickResponses.map((response, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleQuickResponse(response)}
-                  className="px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-full hover:bg-indigo-100 transition-colors"
-                >
-                  {response}
-                </button>
-              ))}
-            </div>
-          </div>
-        
-        
         {/* Input Area */}
         <div className="bg-white border-t border-gray-200 p-4">
-          <div className="flex items-center  w-2/3 mx-auto bg-gray-50 rounded-full shadow-sm border border-gray-200 pr-1">
-         
+          <div className="flex items-center w-2/3 mx-auto bg-gray-50 rounded-full shadow-sm border border-gray-200 pr-1">
             <input
               ref={inputRef}
               type="text"
@@ -452,16 +463,12 @@ const handleNewSession = () => {
             </button>
           </div>
           
-          {/* Emoji Panel */}
-         
-          
           <p className="text-xs text-gray-400 mt-2 text-center">
             Your wellness assistant is here to help. Responses are AI-generated.
           </p>
         </div>
       </div>
     </div>
-  );
-}
+  );}
 
-export default Home;
+  export default Home;

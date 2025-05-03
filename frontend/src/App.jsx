@@ -3,6 +3,8 @@ import Login from './Pages/login';
 import Home from './Pages/home';
 import HistoryPage from './Pages/HistoryPage';// In App.js
 import MentalHealthLandingPage from './Pages/LandingPage/Landing';
+import AllArticlesPage from './Pages/LandingPage/AllArticles';
+import 'regenerator-runtime/runtime';
 function App() {
   return (
     <Routes>
@@ -11,6 +13,8 @@ function App() {
       <Route path="/chat" element={<Home />} />
       <Route path="/chat/:id" element={<Home />} /> {/* Add this line */}
       <Route path="/history" element={<HistoryPage />} />
+      <Route path="/all-articles" element={<AllArticlesPage />} /> {/* 👈 Fix: assign element */}
+
     </Routes>
   );
 }

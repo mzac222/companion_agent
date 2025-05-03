@@ -33,7 +33,7 @@ export default function Footer() {
           {/* Quick Links */}
           <div>
             <h3 className="text-lg font-semibold mb-6">Quick Links</h3>
-            <ul className="space-y-2">
+            <ul className=" flex flex-row gap-12">
               <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Home</a></li>
               <li><a href="#features" className="text-gray-400 hover:text-white transition-colors">Features</a></li>
               <li><a href="#about" className="text-gray-400 hover:text-white transition-colors">About</a></li>
@@ -43,25 +43,9 @@ export default function Footer() {
           </div>
 
           {/* Resources */}
-          <div>
-            <h3 className="text-lg font-semibold mb-6">Resources</h3>
-            <ul className="space-y-4">
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Mental Health Blog</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Support Guides</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Research Papers</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Community Stories</a></li>
-            </ul>
-          </div>
-
+        
           {/* Contact Info */}
-          <div>
-            <h3 className="text-lg font-semibold mb-6">Contact Us</h3>
-            <ul className="space-y-4">
-              <li className="text-gray-400">help@mindfulchat.com</li>
-              <li className="text-gray-400">1-800-MINDFUL</li>
-              <li className="text-gray-400">123 Wellness Street, Health City, 90210</li>
-            </ul>
-          </div>
+          
         </div>
 
         {/* Bottom Footer */}
@@ -70,11 +54,7 @@ export default function Footer() {
             <p className="text-gray-400 mb-4 md:mb-0">
               © 2025 MindfulChat. All rights reserved.
             </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Privacy Policy</a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Terms of Service</a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Support</a>
-            </div>
+          
           </div>
         </div>
       </div>

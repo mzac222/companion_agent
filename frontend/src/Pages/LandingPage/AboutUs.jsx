@@ -21,7 +21,7 @@ export default function AboutSection() {
               About <span className="text-indigo-600">MindfulChat</span>
             </h2>
             <p className="text-lg text-gray-700 mb-5">
-              MindfulChat is a heartfelt project by two students dedicated to bridging the gap between technology and mental health. Our aim is to provide a space where anyone can feel heard, supported, and empowered to face life’s challenges.
+              MindfulChat is our Major Project and we are dedicated to bridging the gap between technology and mental health. Our aim is to provide a space where anyone can feel heard, supported, and empowered to face life’s challenges.
             </p>
             <p className="text-lg text-gray-700 mb-8">
               While we aren't professionals, every line of code is built with empathy, careful research, and an open heart. We're committed to growing and improving—one conversation at a time.

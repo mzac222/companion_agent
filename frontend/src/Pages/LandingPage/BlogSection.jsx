@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import blogs from "../../data/data"
+import { useNavigate } from 'react-router-dom';
 
 export default function BlogSection() {
   // Use the imported blogs from the pasted file
  
   
   const [activeTab, setActiveTab] = useState('all');
+  const navigate=useNavigate();
   
   // Get unique categories from blogs for dynamic tabs
   const categories = ['all', ...new Set(blogs.map(blog => blog.category))];
@@ -103,7 +105,7 @@ export default function BlogSection() {
         
         {filteredBlogs.length > 6 && (
           <div className="text-center mt-12">
-            <button className="bg-white hover:bg-gray-50 text-indigo-600 font-medium px-6 py-3 rounded-full shadow-sm border border-gray-200 inline-flex items-center transition-colors">
+            <button onClick={() => navigate('/all-articles')} className="bg-white hover:bg-gray-50 text-indigo-600 font-medium px-6 py-3 rounded-full shadow-sm border border-gray-200 inline-flex items-center transition-colors">
               Browse all articles
               <ChevronDown className="ml-2 h-4 w-4" />
             </button>

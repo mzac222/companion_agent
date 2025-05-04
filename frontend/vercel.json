@@ -1,18 +1,5 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "frontend/vite.config.js",
-        "use": "@vercel/static-build"
-      }
-    ],
-    "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "/index.html"
-      }
-    ],
-    "buildCommand": "cd frontend && npm install && npm run build",
-    "outputDirectory": "frontend/dist"
+    "rewrites": [
+      { "source": "/(.*)", "destination": "/" }
+    ]
   }
-  

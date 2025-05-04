@@ -7,7 +7,7 @@ function HeroSection() {
   const navigate = useNavigate();
   
   return (
-    <section className="bg-gradient-to-br from-indigo-100 via-purple-100 to-violet-200 pt-32 pb-24 overflow-hidden">
+    <section className="bg-gradient-to-br from-indigo-100 via-blue-100 to-indigo-200 pt-32 pb-24 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col-reverse md:flex-row items-center gap-16">
           
@@ -32,11 +32,11 @@ function HeroSection() {
 
           {/* Right Image */}
           <div className="md:w-1/2 fade-in-section opacity-0 relative group">
-            <div className="relative w-full max-w-md mx-auto">
+            <div className="relative w-full max-w-lg mx-auto">
               <img
                 src={chat}
                 alt="MindfulChat interface"
-                className="rounded-3xl shadow-2xl transform transition-transform duration-300 group-hover:scale-105"
+                className="rounded-xl shadow-2xl transform transition-transform duration-300 group-hover:scale-105"
               />
               <div className="absolute -bottom-5 -right-5 bg-indigo-600 text-white p-3 rounded-full shadow-lg animate-bounce">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

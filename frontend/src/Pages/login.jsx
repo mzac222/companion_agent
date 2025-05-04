@@ -51,12 +51,12 @@ function Login() {
   };
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-indigo-200 to-purple-300">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-blue-100 to-indigo-200">
       <form
         onSubmit={handleAuth}
         className="bg-white p-10 rounded-2xl shadow-2xl w-96 space-y-6"
       >
-        <h2 className="text-3xl font-bold text-center text-purple-700">
+        <h2 className="text-3xl font-bold text-center text-indigo-600">
           {isRegistering ? 'Create Account' : 'Welcome Back'}
         </h2>
         
@@ -64,7 +64,7 @@ function Login() {
           <input
             type="email"
             placeholder="Email"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -73,7 +73,7 @@ function Login() {
         <input
           type="text"
           placeholder="Username"
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
@@ -81,7 +81,7 @@ function Login() {
         <input
           type="password"
           placeholder="Password"
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
@@ -89,7 +89,7 @@ function Login() {
         <button
          
           type="submit"
-          className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition duration-300"
+          className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-300"
         >
           {isRegistering ? 'Register' : 'Log In'}
         </button>
@@ -98,7 +98,7 @@ function Login() {
           {isRegistering ? 'Already have an account? ' : 'Need an account? '}
           <button 
             type="button"
-            className="text-purple-600 hover:underline"
+            className="text-indigo-600 hover:underline"
             onClick={() => setIsRegistering(!isRegistering)}
           >
             {isRegistering ? 'Log in' : 'Register'}

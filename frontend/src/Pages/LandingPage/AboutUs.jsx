@@ -2,7 +2,7 @@ import about from '../../assets/about.jpg';
 
 export default function AboutSection() {
   return (
-    <section id="about" className="py-24 bg-gradient-to-br from-indigo-50 via-purple-50 to-violet-100">
+    <section id="about" className="py-24 bg-gradient-to-br bg-gradient-to-br from-indigo-100 via-blue-100 to-indigo-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row items-center gap-12">
           
@@ -17,15 +17,15 @@ export default function AboutSection() {
 
           {/* Right Content */}
           <div className="lg:w-1/2 fade-in-section opacity-0">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight tracking-tight">
-              About <span className="text-indigo-600">MindfulChat</span>
-            </h2>
-            <p className="text-lg text-gray-700 mb-5">
-              MindfulChat is our Major Project and we are dedicated to bridging the gap between technology and mental health. Our aim is to provide a space where anyone can feel heard, supported, and empowered to face life’s challenges.
-            </p>
-            <p className="text-lg text-gray-700 mb-8">
-              While we aren't professionals, every line of code is built with empathy, careful research, and an open heart. We're committed to growing and improving—one conversation at a time.
-            </p>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight tracking-tight">
+  About <span className="text-indigo-600">MindfulChat</span>
+</h2>
+<p className="text-lg text-gray-700 mb-5">
+  MindfulChat is our Major Project, built to bridge the gap between mental health and technology. We've created a space where anyone can feel heard, supported, and empowered to navigate life’s challenges.
+</p>
+<p className="text-lg text-gray-700 mb-8">
+  While we're not licensed professionals, every line of code is written with empathy, thoughtful research, and an open heart. MindfulChat is a work in progress—just like all of us—and we’re committed to growing, learning, and improving one meaningful conversation at a time.
+</p>
 
             <div className="grid grid-cols-2 gap-6">
               {[
